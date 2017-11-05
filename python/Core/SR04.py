@@ -3,6 +3,10 @@ import RPi.GPIO as GPIO
 
 class SR04(object):
     def __init__(self, echo, trig, cleanup = True, setGPIOMode = True):
+        self.echo = echo
+        self.trig = trig
+        self.cleanup = cleanup
+        self.setGPIOMode = setGPIOMode
         try:
             #check if correct input is used
             pass
@@ -12,6 +16,7 @@ class SR04(object):
 
         if (self.setGPIOMode):
             GPIO.setmode(GPIO.BOARD)
+        GPIO.setwarnings(False)
 
         GPIO.setup(self.echo, GPIO.IN)
         GPIO.setup(self.trig, GPIO.OUT)
@@ -21,7 +26,7 @@ class SR04(object):
     def sense(self):
         try:
             GPIO.output(self.trig,0) # ensures that trigger is off
-            time.sleep(1.0) #waits for sensors to settle                     #### Reduce this wait time later / optimize code so i don't have to wait 1 second for everytime that I want to sense something!!
+            time.sleep(0.050) #waits for sensors to settle                     #### Reduce this wait time later / optimize code so i don't have to wait 1 second for everytime that I want to sense something!!
             GPIO.output(self.trig,1) # sets trig on
             time.sleep(0.00001) #waits 10us
             GPIO.output(self.trig,0)

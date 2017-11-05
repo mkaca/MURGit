@@ -27,6 +27,8 @@ class Move(object):
 
     #Moves vehicle forward for x cm
     def Forward(self, distance):
+        self.left = GPIO.PWM(self.lWheelPin,50)
+        self.right = GPIO.PWM(self.rWheelPin,50)
         # Might have to setup GPIO again as outputs
         # Might have to setup the PWM inside each method
         try:
@@ -40,20 +42,21 @@ class Move(object):
             ## 0.16*6s = 360 degree turn
             ## 40mm radius , so 8*3.14 = one full revolution , 
             ## so 1 of movement = x seconds ,  0.96s = 8*3.14, 0.96/(8*3.14159) = 1cm
-            self.waitTime = (self.distance*0.96)/(8*3.14159)
+            self.waitTime = (distance*0.96*1.13)/(8*3.14159)
             time.sleep(self.waitTime)
-        except e:
-            print ("something went wrong, error: ", e)
+        except Exception as e:
+            print ("something went wrong, error: ", str(e))
         finally:    
-            self.left = stop()
-            self.right = stop()
-            time.sleep(1.0)    ## necessary delay to allow setup of servos
+            self.left.stop()
+            self.right.stop()
+            time.sleep(0.100)    ## necessary delay to allow setup of servos
             #Try reducing wait time at end to optimize performance
 
     #Moves vehicle backward for x cm
     def Backward(self, distance):
-        # Might have to setup GPIO again as outputs
-        # Might have to setup the PWM inside each method
+        self.left = GPIO.PWM(self.lWheelPin,50)
+        self.right = GPIO.PWM(self.rWheelPin,50)
+        
         try:
             self.left.start(6.5)
             self.right.start (6.5)
@@ -65,18 +68,20 @@ class Move(object):
             ## 0.16*6s = 360 degree turn
             ## 40mm radius , so 8*3.14 = one full revolution , 
             ## so 1 of movement = x seconds ,  0.96s = 8*3.14, 0.96/(8*3.14159) = 1cm
-            self.waitTime = (self.distance*0.96)/(8*3.14159)
+            self.waitTime = (distance*0.96*1.13)/(8*3.14159)    #1.13 to componesate for error
             time.sleep(self.waitTime)
-        except e:
-            print ("something went wrong, error: ", e)
+        except Exception as e:
+            print ("something went wrong, error: ", str(e))
         finally:    
-            self.left = stop()
-            self.right = stop()
-            time.sleep(1.0)    ## necessary delay to allow setup of servos
+            self.left.stop()
+            self.right.stop()
+            time.sleep(0.100)    ## necessary delay to allow setup of servos
             #Try reducing wait time at end to optimize performance
 
     #Rotates vehicle a certain angle, where 90 is fully right, and -90 is fully left
     def Turn(self, angle):
+        self.left = GPIO.PWM(self.lWheelPin,50)
+        self.right = GPIO.PWM(self.rWheelPin,50)
         #DIRECTIONS MIGHT BE MESSED UP!!!! SO KEEP IN MIND
         # Might have to setup GPIO again as outputs
         # Might have to setup the PWM inside each method
@@ -100,14 +105,14 @@ class Move(object):
             ## 11.5 cm radius, , so 23*3.14/360 is the distance travelled for 1 degree
             ## 0.96/(8*3.14159) = 1cm
             ## so 0.96/(8*3.14159) * 23*3.14/360 = 1 degree 
-            self.waitTime = abs(self.angle*0.96*23)/(8*360)  ## Test this
+            self.waitTime = abs(angle*0.96*23*0.95)/(8*180)  # 0.95 to commensate for error
             time.sleep(self.waitTime)
         except Exception as e:
-            print ("something went wrong, error: ", e)
+            print ("something went wrong, error: ", str(e))
         finally:    
-            self.left = stop()
-            self.right = stop()
-            time.sleep(1.0)    ## necessary delay to allow setup of servos
+            self.left.stop()
+            self.right.stop()
+            time.sleep(0.100)    ## necessary delay to allow setup of servos
             #Try reducing wait time at end to optimize performance
 
 

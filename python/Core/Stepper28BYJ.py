@@ -72,7 +72,7 @@ class Stepper28BYJ(object):
               GPIO.output(xpin, False)
 
           # Determine the direction of the stepper motor    
-          if (self.clockwise):                    ### Might need to change this direction logic
+          if (clockwise):                    ### Might need to change this direction logic
             self.StepCounter += 1
           else:
             self.StepCounter -= 1                ### Might need to do more than just this 
@@ -81,11 +81,11 @@ class Stepper28BYJ(object):
           if (self.StepCounter==self.StepCount):
             self.StepCounter = 0
           if (self.StepCounter<0):
-            self.StepCounter = self.StepCount       ### in correspondence with the upper comment, might just have to do StepCount - 1, so it's not array out of bounds 
+            self.StepCounter = self.StepCount - 1      
         # Wait before moving on
           time.sleep(self.WaitTime)
       print('program succeeded')
-      time.sleep(0.500)
+      time.sleep(0.01)   #wait 10 ms 
 
     except Exception as e:
       if self.cleanup:
