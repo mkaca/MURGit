@@ -102,7 +102,7 @@ class Move(object):
             ## so 0.96/(8*3.14159) * 23*3.14/360 = 1 degree 
             self.waitTime = abs(self.angle*0.96*23)/(8*360)  ## Test this
             time.sleep(self.waitTime)
-        except e:
+        except Exception as e:
             print ("something went wrong, error: ", e)
         finally:    
             self.left = stop()

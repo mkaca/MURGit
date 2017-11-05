@@ -13,7 +13,8 @@ class Stepper28BYJ(object):
     self.Pin4 = Pin4
     self.cleanup = cleanup
     self.setGPIOMode = setGPIOMode
-    #Throw error if class is called without the 4 pins
+
+    #Throw error if class is called without the 4 pins .... change this to like try catch with int(input) or whatever
     if (Pin1 == None or Pin2 == None or Pin3 == None or Pin4 == None):
       raise ValueError("You MUST define all 4 pins as INTEGERS, ex: 2,23,4,21")
 
@@ -53,7 +54,7 @@ class Stepper28BYJ(object):
     self.Seq[6] = [0,0,0,1]
     self.Seq[7] = [1,0,0,1]
 
-  def moveDegrees(self, degrees):
+  def moveDegrees(self, degrees, clockwise = True):
     GPIO.setmode(GPIO.BOARD)
     try:
       
@@ -69,19 +70,24 @@ class Stepper28BYJ(object):
               GPIO.output(xpin, True)
             else:
               GPIO.output(xpin, False)
-          self.StepCounter += 1
+
+          # Determine the direction of the stepper motor    
+          if (self.clockwise):                    ### Might need to change this direction logic
+            self.StepCounter += 1
+          else:
+            self.StepCounter -= 1                ### Might need to do more than just this 
         # If we reach the end of the sequence
         # start again
           if (self.StepCounter==self.StepCount):
             self.StepCounter = 0
           if (self.StepCounter<0):
-            self.StepCounter = self.StepCount
+            self.StepCounter = self.StepCount       ### in correspondence with the upper comment, might just have to do StepCount - 1, so it's not array out of bounds 
         # Wait before moving on
           time.sleep(self.WaitTime)
       print('program succeeded')
       time.sleep(0.500)
 
-    except  Exception as e:
+    except Exception as e:
       if self.cleanup:
         GPIO.cleanup()
         print('program failed: \t')
