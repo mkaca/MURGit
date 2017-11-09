@@ -115,6 +115,37 @@ class Move(object):
             time.sleep(0.100)    ## necessary delay to allow setup of servos
             #Try reducing wait time at end to optimize performance
 
+  #Moves vehicle forward until stopped
+  ###NOTE that this is a dangerous function
+    def Go(self):
+        self.left = GPIO.PWM(self.lWheelPin,50)
+        self.right = GPIO.PWM(self.rWheelPin,50)
+        try:
+            self.left.start(6.5)
+            self.right.start (6.5)
+            
+            self.left.ChangeDutyCycle(8)  
+            self.right.ChangeDutyCycle(4)  
 
+        except Exception as e:
+            print ("something went wrong, error: ", str(e))
+            self.left.stop()
+            self.right.stop()
+        finally:    
+            time.sleep(0.010)    ## necessary delay to allow setup of servos
+
+    ### Stops vehicle
+    def Stop(self):
+        self.left = GPIO.PWM(self.lWheelPin,50)
+        self.right = GPIO.PWM(self.rWheelPin,50)
+        try:
+            self.left.stop()
+            self.right.stop()            
+        except Exception as e:
+            print ("something went wrong, error: ", str(e))
+        finally:
+            self.left.stop()
+            self.right.stop()    
+            time.sleep(0.010)    ## necessary delay to allow setup of servos
     
 

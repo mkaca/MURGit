@@ -58,7 +58,7 @@ class Stepper28BYJ(object):
     GPIO.setmode(GPIO.BOARD)
     try:
       
-      self.steps = int(round(degrees*1024/90))
+      self.steps = int(round(abs(degrees)*1024/90))
       print('Moving Stepper %i steps',self.steps)
       print(', which is the same as %i degrees',degrees)
       # moves stepper motor by 45 degrees forever
