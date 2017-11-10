@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 
 ## CLASS FOR MOVING THE VEHICLE
 class Move(object):
-    def __init__(self, lWheelPin, rWheelPin, cleanup = True, setWarnings = False):
+    def __init__(self, lWheelPin, rWheelPin, cleanup = False, setWarnings = False):
         self.lWheelPin = lWheelPin
         self.rWheelPin = rWheelPin
         self.cleanup = cleanup

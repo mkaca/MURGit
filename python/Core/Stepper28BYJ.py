@@ -13,6 +13,7 @@ class Stepper28BYJ(object):
     self.Pin4 = Pin4
     self.cleanup = cleanup
     self.setGPIOMode = setGPIOMode
+    self.startingPos = 0
 
     #Throw error if class is called without the 4 pins .... change this to like try catch with int(input) or whatever
     if (Pin1 == None or Pin2 == None or Pin3 == None or Pin4 == None):
@@ -54,25 +55,26 @@ class Stepper28BYJ(object):
     self.Seq[6] = [0,0,0,1]
     self.Seq[7] = [1,0,0,1]
 
-  def moveDegrees(self, degrees, clockwise = True):
+  def moveToPosition(self, position):
     GPIO.setmode(GPIO.BOARD)
     try:
+      degrees = position - self.startingPos
+      if degrees > 0:
+         degrees = degrees*4
       
       self.steps = int(round(abs(degrees)*1024/90))
-      print('Moving Stepper %i steps',self.steps)
-      print(', which is the same as %i degrees',degrees)
-      # moves stepper motor by 45 degrees forever
+      print("Move from %i to %i which is %i"%(self.startingPos, position,self.steps))
       for _ in range(0,self.steps):  # 12 =1 degree
           for pin in range(0, 4):
             xpin = self.StepPins[pin]
             if self.Seq[self.StepCounter][pin]!=0:
-              #print " Step %i Enable %i" %(StepCounter,xpin)
+              #print " Step %i Enable %i" %(self.StepCounter,xpin)
               GPIO.output(xpin, True)
             else:
               GPIO.output(xpin, False)
 
           # Determine the direction of the stepper motor    
-          if (clockwise):                    ### Might need to change this direction logic
+          if (degrees> 0):                    ### Might need to change this direction logic
             self.StepCounter += 1
           else:
             self.StepCounter -= 1                ### Might need to do more than just this 
@@ -84,8 +86,10 @@ class Stepper28BYJ(object):
             self.StepCounter = self.StepCount - 1      
         # Wait before moving on
           time.sleep(self.WaitTime)
+          
+      self.startingPos = position
       print('program succeeded')
-      time.sleep(0.01)   #wait 10 ms 
+      time.sleep(0.1)   #wait 10 ms 
 
     except Exception as e:
       if self.cleanup:
@@ -99,5 +103,5 @@ class Stepper28BYJ(object):
         for pin in self.StepPins:
           GPIO.setup(pin,GPIO.OUT)
           GPIO.output(pin, False)
-          print('program complete')
+          #print('program complete')
   
