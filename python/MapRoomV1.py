@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from Core import Stepper28BYJ
+ Core import Stepper28BYJ
 from Core import SR04
 from Core import Move
 import math as m
@@ -53,29 +51,47 @@ try:
 
 	currentPositionX = 50  ## change this when car moves
 	currentPositionX = 50  ## change this when car moves
+	dirAngle = 0     ### make angle consistent with the move.turn function
 
     
     #### START LOOP FOR SCANNING ROOM
 
-	#Start scanning sequence after SONAR detects thingy and update map of 10m x 10m
-	for angle in range(0,90,3):           ### change code so that servo doesn't reset... otherwise will have to do increments of 3
-		stepper.moveDegrees(angle, clockwise = True)
-		distancePositive = False
-		while (not distancePositive):
-			distance = tof.get_distance()
-			if (distance > 0):
-				distancePositive = True
-			time.sleep(timing/1000000.00)   					  ### try removing this wait
-		x,y = lidarToXY(distance,width,height,abs(angle))
-	    mapArray[x + currentPositionX ][y + currentPositionY] += 1 
+    ### Moves until SONAR stops it OR until 3 seconds have passed
+    ## Eventually will need to change it so that it maps it while moving too (for corridors and stuff, like with lidar on one side)
+    ### Always starts by moving the vehicle in the X direction 
+    for _ in range(5):
+	    move.Go()
+	    count = 0
+	    start = time.time()
+	    while(count < 4):
+	    	if redSONAR.sense() < 80 or blueSONAR.sense() < 80 or time.time()-start > 3:
+	    		count ++
+	    	time.sleep(0.1)
+	    end = time.time()
+	    move.Stop()
+	    distanceMoved = ((end-start)*8*3.14159)/(0.96*1.13)
+	    currentPositionX = currentPositionX + distanceMoved*m.cos(dirAngle*3.14159/180)
+	    currentPositionY = currentPositionY + distanceMoved*m.sin(dirAngle*3.14159/180)
 
-	print (mapArray)
+		#Start scanning sequence after SONAR detects thingy and update map of 10m x 10m
+		for angle in range(0,90,3):           ### change code so that servo doesn't reset... otherwise will have to do increments of 3
+			stepper.moveDegrees(angle, clockwise = True)
+			distancePositive = False
+			while (not distancePositive):
+				distance = tof.get_distance()
+				if (distance > 0):
+					distancePositive = True
+				time.sleep(timing/1000000.00)   					  ### try removing this wait
+			x,y = lidarToXY(distance,width,height,abs(angle))
+		    mapArray[x + currentPositionX ][y + currentPositionY] += 1 
 
-	# if no objects detected, drive straight, and scan path with RED and BLUE sensors,
-	#Once object is less than 100cm away, stop moving, and scan with LIDAR
-	# Once the first lidar scan is detected, map this as the robots position in a 1000 x 1000 array, where each unit is 1cm,
-	#THen continue the move, SONAR sense, LIDAR scan sequence while mapping and tracking robot's distance travelled.
+		###if move.turn is used, change the initDirAngle
+		if (redSONAR.sense() < 80 or blueSONAR.sense() < 80):
+			move.turn(90)     ## turns 90 degrees clockwise
+			dirAngle  = dirAngle + 90 #### this might be a bit wrong 
 
+		print (mapArray)
+		time.sleep(3)    # for testing purposes
 
 	#move.Forward(5)
 	#move.Backward(5)
@@ -84,9 +100,6 @@ try:
 	#stepper.moveDegrees(90,clockwise = False)
 	#stepper.moveDegrees(90,clockwise = True)
 
-	#redSONAR.sense()
-	#blueSONAR.sense()
-
 except Exception as e:
 	print("something went wrong: ", e)
 
@@ -94,4 +107,3 @@ finally:
 	tof.stop_ranging()
 	move.Stop()
 	#GPIO.cleanup()
-
