@@ -48,7 +48,7 @@ while (1):
         #dutyCycles = [8,6.5,4]      ## This is for WHEEL 1
         #dutyCycles2 = [10,6.5,4]   ##THIS IS FOR WHEEL 2
         p.ChangeDutyCycle(8)  ## WHEEL 1
-        g.ChangeDutyCycle(4)  ##WHEEL 2
+        g.ChangeDutyCycle(8)  ##WHEEL 2
         print("Forward")
         time.sleep(1.0)
         p.stop()
@@ -61,7 +61,7 @@ while (1):
         #dutyCycles = [8,6.5,4]      ## This is for WHEEL 1
         #dutyCycles2 = [10,6.5,4]   ##THIS IS FOR WHEEL 2
         p.ChangeDutyCycle(4)  ## WHEEL 1
-        g.ChangeDutyCycle(8)  ##WHEEL 2
+        g.ChangeDutyCycle(4)  ##WHEEL 2
         print("Backward")
         time.sleep(1.0)
         p.stop()

@@ -148,4 +148,29 @@ class Move(object):
             self.right.stop()    
             time.sleep(0.010)    ## necessary delay to allow setup of servos
     
+    def StartTurn(self,clockWise = True):
+        self.left = GPIO.PWM(self.lWheelPin,50)
+        self.right = GPIO.PWM(self.rWheelPin,50)
+        #DIRECTIONS MIGHT BE MESSED UP!!!! SO KEEP IN MIND
+        # Might have to setup GPIO again as outputs
+        # Might have to setup the PWM inside each method
+        try:
+            self.left.start(6.5)
+            self.right.start (6.5)
+            
+            if (clockWise):
+                self.left.ChangeDutyCycle(8)  
+                self.right.ChangeDutyCycle(8)  
+                print ('Rotating CW')
+            else:
+                self.right.ChangeDutyCycle(4)
+                self.left.ChangeDutyCycle(4)
+                print ('Rotating CCW')
+        
+        except Exception as e:
+            print ("something went wrong, error: ", str(e))
+            self.left.stop()
+            self.right.stop()
+            time.sleep(0.100)    ## necessary delay to allow setup of servos
+
 

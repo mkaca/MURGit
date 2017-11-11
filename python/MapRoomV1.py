@@ -1,9 +1,12 @@
 from Core import Stepper28BYJ
 from Core import SR04
 from Core import Move
+from Core import BNO055
+import VL53L0X
+
+from matplotlib import pyplot as plt
 import math as m
 import time
-import VL53L0X
 
 width = 11.5
 height = 1.5
@@ -33,6 +36,20 @@ def lidarToXY(distance,width,height,angle):
 	print(angle)
 	return x,y
 
+def getProperIMUReading(bno):
+    sum = 0
+    count = 0
+    sampleSize = 10
+    for _ in range(sampleSize):
+        reading = bno.getVector(bno.VECTOR_EULER)[0]
+        if reading < 360 and reading > 180:
+            reading = reading - 360
+        if ( reading < 181 and reading > -181):
+            sum += reading
+            count += 1
+        time.sleep(0.01)
+    return sum/count
+
 #try:
 while (1):  ## this is temporary and wil\l not be used
     # 1 unit is 1 cm
@@ -42,7 +59,15 @@ while (1):  ## this is temporary and wil\l not be used
     move = Move.Move(12,16)
     redSONAR = SR04.SR04 (18,22)
     blueSONAR = SR04.SR04 (24,26)
+    bno = BNO055.BNO055()
     tof = VL53L0X.VL53L0X()
+    
+    # IMU init
+    if bno.begin() is not True:
+        print "Error initializing device"
+        exit()
+    time.sleep(0.1)
+    bno.setExternalCrystalUse(True)
 
     ### LIDAR init
     tof.start_ranging(VL53L0X.VL53L0X_BETTER_ACCURACY_MODE)
@@ -88,22 +113,35 @@ while (1):  ## this is temporary and wil\l not be used
                             time.sleep(timing/1000000.00)   					  ### try removing this wait
                     if (distance < 120 and distance > 4):
                         x,y = lidarToXY(distance,width,height,abs(angle))
-                        print (y)
+                        #print (y)
                         x = x + currentPositionX
                         y = y + currentPositionY
-                        print('y',y)
-                        print('x',x)
+                        # print('y',y)
+                        #print('x',x)
                         mapArray[x][y] = mapArray[x][y] + 1
                         superCounter = superCounter +1
                     time.sleep(0.01)
             stepper.moveToPosition(0)
             ###if move.turn is used, change the initDirAngle
             if (redSONAR.sense() < 80 or blueSONAR.sense() < 80):
-                    move.Turn(90)     ## turns 90 degrees clockwise
-                    dirAngle  = dirAngle + 90 #### this might be a bit wrong 
-
+                    move.StartTurn(90)     ## turns 90 degrees clockwise
+                    print ('IMU:',getProperIMUReading(bno))
+                    while(getProperIMUReading(bno) - dirAngle < 85):
+                          print ('angle: ',getProperIMUReading(bno) )
+                    dirAngle  = dirAngle + getProperIMUReading(bno)
+                    move.Stop()
+            valuesX = []
+            valuesY = []
+            for i in range(200):
+                for j in range(200):
+                    if (mapArray[i][j] > 0):
+                        valuesX.append(i)
+                        valuesY.append(j)
+            plt.plot(valuesX,valuesY)
+            plt.grid(True)
+            plt.show()
             #print (mapArray)
-            print('total',superCounter)
+            print('totallllllllllllllllllllllllllll',superCounter)
             time.sleep(3)    # for testing purposes
 
 #except Exception as e:
