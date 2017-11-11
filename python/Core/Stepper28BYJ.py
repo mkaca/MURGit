@@ -59,8 +59,8 @@ class Stepper28BYJ(object):
     GPIO.setmode(GPIO.BOARD)
     try:
       degrees = position - self.startingPos
-      if degrees > 0:
-         degrees = degrees*4
+      #if degrees > 0:
+      #  degrees = degrees*4
       
       self.steps = int(round(abs(degrees)*1024/90))
       print("Move from %i to %i which is %i"%(self.startingPos, position,self.steps))

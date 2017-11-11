@@ -14,26 +14,30 @@ height = 1.5
 ### Angle is angle of the stepper motor that the LIDAR is on 
 def lidarToXY(distance,width,height,angle):
 	### converts degrees to rad
+        angle =abs(angle)
 	angleR = angle*3.14159/180
 	# Gets limit angle based on geometry
 	limitAngle = m.degrees(m.atan(width/height))
 
 	if (angle <= limitAngle):
 		c = height/m.cos(angleR)
+	elif (angle == 90):
+                c = width
 	else:
 		c = width/m.cos(angleR)
 	alpha = distance - c
 	x = int(round(alpha*m.sin(angleR)))
 	y = int(round(alpha*m.cos(angleR)))
+	print ('d',distance)
+	print('c',c)
+	print(angle)
 	return x,y
 
 #try:
-while (1):
+while (1):  ## this is temporary and wil\l not be used
     # 1 unit is 1 cm
     mapArray = [[0 for _ in range(200)] for _ in range(200)] #2m x 12 for testing
-
-    print (len(mapArray[0]))
-    time.sleep(1)
+    
     stepper = Stepper28BYJ.Stepper28BYJ(37,33,31,29)
     move = Move.Move(12,16)
     redSONAR = SR04.SR04 (18,22)
@@ -58,7 +62,7 @@ while (1):
     ### Moves until SONAR stops it OR until 3 seconds have passed
     ## Eventually will need to change it so that it maps it while moving too (for corridors and stuff, like with lidar on one side)
     ### Always starts by moving the vehicle in the X direction 
-    for _ in range(5):
+    for _ in range(3):
 	    move.Go()
 	    count = 0
 	    start = time.time()
@@ -77,7 +81,7 @@ while (1):
                     stepper.moveToPosition(angle)
                     distancePositive = False
                     while (not distancePositive):
-                            distance = tof.get_distance()
+                            distance = tof.get_distance()/ 10
                             print (distance)
                             if (distance > 0):
                                     distancePositive = True
@@ -88,23 +92,19 @@ while (1):
                         x = x + currentPositionX
                         y = y + currentPositionY
                         print('y',y)
+                        print('x',x)
                         mapArray[x][y] = mapArray[x][y] + 1
                         superCounter = superCounter +1
                     time.sleep(0.01)
-                    
-
+            stepper.moveToPosition(0)
             ###if move.turn is used, change the initDirAngle
             if (redSONAR.sense() < 80 or blueSONAR.sense() < 80):
                     move.Turn(90)     ## turns 90 degrees clockwise
                     dirAngle  = dirAngle + 90 #### this might be a bit wrong 
 
             #print (mapArray)
-            print(superCounter)
+            print('total',superCounter)
             time.sleep(3)    # for testing purposes
-
-	#move.Forward(5)
-	#move.Backward(5)
-	#move.Turn(-90)
 
 #except Exception as e:
     print("something went wrong: ", e)
@@ -112,4 +112,4 @@ while (1):
 #finally:
     tof.stop_ranging()
     move.Stop()
-	#GPIO.cleanup()
+    GPIO.cleanup()
