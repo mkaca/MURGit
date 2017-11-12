@@ -15,10 +15,11 @@ height = 1.5
 ### The height is the distance from lidar center to front of car
 ### Distance is the value that the lidar returns
 ### Angle is angle of the stepper motor that the LIDAR is on 
-def lidarToXY(distance,width,height,angle):
+def lidarToXY(distance,width,height,angle,dirAngle):
 	### converts degrees to rad
-        angle =abs(angle)
+        #angle =abs(angle)
 	angleR = angle*3.14159/180
+	angleDirR = dirAngle*3.14159/180
 	# Gets limit angle based on geometry
 	limitAngle = m.degrees(m.atan(width/height))
 
@@ -29,8 +30,8 @@ def lidarToXY(distance,width,height,angle):
 	else:
 		c = width/m.cos(angleR)
 	alpha = distance - c
-	x = int(round(alpha*m.sin(angleR)))
-	y = int(round(alpha*m.cos(angleR)))
+	x = int(round(alpha*m.sin(angleR+angleDirR)))
+	y = int(round(alpha*m.cos(angleR+angleDirR)))
 	#print ('d',distance)
 	#print('c',c)
 	#print('angle:',angle)
@@ -42,18 +43,23 @@ def getProperIMUReading(bno):
     sampleSize = 10
     for _ in range(sampleSize):
         reading = bno.getVector(bno.VECTOR_EULER)[0]
-        if reading < 360 and reading > 180:
+        if reading <= 360 and reading >= 180:
             reading = reading - 360
         if ( reading < 181 and reading > -181):
             sum += reading
             count += 1
         time.sleep(0.01)
-    return sum/count
+        if count == 0:
+            print('bad reading:',reading)
+            print('distance:',bno.getVector(bno.VECTOR_EULER)[0])
+        if count == 2:
+            return sum/count
+    raise("ERROR...IMU isnt reading any proper values")
 
 #try:
 while (1):  ## this is temporary and wil\l not be used
     # 1 unit is 1 cm
-    mapArray = [[0 for _ in range(200)] for _ in range(200)] #2m x 12 for testing
+    mapArray = [[0 for _ in range(600)] for _ in range(600)] #3m x 3mfor testing
     
     stepper = Stepper28BYJ.Stepper28BYJ(37,33,31,29)
     move = Move.Move(12,16)
@@ -77,8 +83,8 @@ while (1):  ## this is temporary and wil\l not be used
     print ("Timing %d ms" % (timing/1000))					   ### whats the point of this
 
 
-    currentPositionX = 50  ## change this when car moves
-    currentPositionY = 50  ## change this when car moves
+    currentPositionX = 300  ## change this when car moves
+    currentPositionY = 300  ## change this when car moves
     dirAngle = 0     ### make angle consistent with the move.turn function
     superCounter = 0
     
@@ -88,14 +94,16 @@ while (1):  ## this is temporary and wil\l not be used
     ## Eventually will need to change it so that it maps it while moving too (for corridors and stuff, like with lidar on one side)
     ### Always starts by moving the vehicle in the X direction 
     for _ in range(4):
-	    move.Go()
 	    count = 0
 	    start = time.time()
-	    while(count < 4):
-	    	if redSONAR.sense() < 80 or blueSONAR.sense() < 80 or time.time()-start > 3:
+	    move.Go()
+	    while(count < 2):
+                redDist = redSONAR.sense()
+                blueDist = blueSONAR.sense()
+	    	if redDist < 80 or blueDist < 80 or time.time()-start > 1:
 	    		count = count + 1
-                print ('RED:', redSONAR.sense())
-                print ('BLUE:', blueSONAR.sense())
+                print ('RED:', redDist)
+                print ('BLUE:', blueDist)
 	    	time.sleep(0.05)
 	    end = time.time()
 	    move.Stop()
@@ -115,7 +123,7 @@ while (1):  ## this is temporary and wil\l not be used
                                     distancePositive = True
                             time.sleep(timing/1000000.00)   					  ### try removing this wait
                     if (distance < 100 and distance > 4):
-                        x,y = lidarToXY(distance,width,height,abs(angle))
+                        x,y = lidarToXY(distance,width,height,angle,dirAngle)
                         #print (y)
                         x = x + currentPositionX
                         y = y + currentPositionY
@@ -123,8 +131,9 @@ while (1):  ## this is temporary and wil\l not be used
                         #print('x',x)
                         mapArray[x][y] = mapArray[x][y] + 1
                         superCounter = superCounter +1
+                        print('recording')
                     time.sleep(0.01)
-                    print(' ')
+                    #print(' ')
             stepper.moveToPosition(0)
             """### Plot map
             valuesX = []
@@ -163,12 +172,12 @@ while (1):  ## this is temporary and wil\l not be used
             
     valuesX = []
     valuesY = []
-    for i in range(200):
-        for j in range(200):
+    for i in range(600):
+        for j in range(600):
             if (mapArray[i][j] > 0):
                 valuesX.append(i)
                 valuesY.append(j)
-    plt.plot(valuesX,valuesY)
+    plt.plot(valuesX,valuesY,'bo')
     plt.grid(True)
     plt.show()
 #except Exception as e:
