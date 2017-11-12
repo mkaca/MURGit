@@ -5,7 +5,7 @@ import time
 import RPi.GPIO as GPIO
 
 class Stepper28BYJ(object):
-  def __init__(self, Pin1, Pin2, Pin3, Pin4, cleanup = True, setGPIOMode = True):
+  def __init__(self, Pin1, Pin2, Pin3, Pin4, cleanup = True, setGPIOMode = True, debugging = False):
 
     self.Pin1 = Pin1
     self.Pin2 = Pin2
@@ -14,6 +14,7 @@ class Stepper28BYJ(object):
     self.cleanup = cleanup
     self.setGPIOMode = setGPIOMode
     self.startingPos = 0
+    self.debugging = debugging
 
     #Throw error if class is called without the 4 pins .... change this to like try catch with int(input) or whatever
     if (Pin1 == None or Pin2 == None or Pin3 == None or Pin4 == None):
@@ -63,7 +64,8 @@ class Stepper28BYJ(object):
       #  degrees = degrees*4
       
       self.steps = int(round(abs(degrees)*1024/90))
-      print("Move from %i to %i which is %i"%(self.startingPos, position,self.steps))
+      if debugging:
+        print("Move from %i to %i which is %i"%(self.startingPos, position,self.steps))
       for _ in range(0,self.steps):  # 12 =1 degree
           for pin in range(0, 4):
             xpin = self.StepPins[pin]
@@ -88,7 +90,8 @@ class Stepper28BYJ(object):
           time.sleep(self.WaitTime)
           
       self.startingPos = position
-      print('program succeeded')
+      if debugging:
+        print('program succeeded')
       time.sleep(0.1)   #wait 10 ms 
 
     except Exception as e:

@@ -2,11 +2,13 @@ import time
 import RPi.GPIO as GPIO
 
 class SR04(object):
-    def __init__(self, echo, trig, cleanup = True, setGPIOMode = True):
+    def __init__(self, echo, trig, cleanup = True, setGPIOMode = True, debugging = False):
         self.echo = echo
         self.trig = trig
         self.cleanup = cleanup
         self.setGPIOMode = setGPIOMode
+        self.debugging = debugging
+
         try:
             #check if correct input is used
             pass
@@ -35,14 +37,17 @@ class SR04(object):
             while (GPIO.input(self.echo)) ==1:
                    self.pulse_end = time.time()
             self.pulse_duration = self.pulse_end - self.pulse_start
-            self.distance = round(self.pulse_duration * 17150,  2) ## this gives us the distance rounded to 2 decimals in cm assuming speed = 343m/s
-            print ("distance: " , self.distance, " cm")
+            distance = round(self.pulse_duration * 17150,  2) ## this gives us the distance rounded to 2 decimals in cm assuming speed = 343m/s
+            if debugging:
+                print ("distance: " , distance, " cm")
+            return distance
         except Exception as e:
             print("Something went wrong, Error: ", str(e))
             if self.cleanup:
                 GPIO.cleanup()
         finally:
           GPIO.output(self.trig, False)
-          print('program complete')
+          if debugging:
+            print('program complete')
  
 

@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 
 ## CLASS FOR MOVING THE VEHICLE
 class Move(object):
-    def __init__(self, lWheelPin, rWheelPin, cleanup = False, setWarnings = False):
+    def __init__(self, lWheelPin, rWheelPin, cleanup = False, setWarnings = False, debugging = False):
         self.lWheelPin = lWheelPin
         self.rWheelPin = rWheelPin
         self.cleanup = cleanup
@@ -38,7 +38,8 @@ class Move(object):
             self.left.ChangeDutyCycle(8)  
             self.right.ChangeDutyCycle(4)  
 
-            print("Moving Forward")
+            if debugging:
+                print("Moving Forward")
             ## 0.16*6s = 360 degree turn
             ## 40mm radius , so 8*3.14 = one full revolution , 
             ## so 1 of movement = x seconds ,  0.96s = 8*3.14, 0.96/(8*3.14159) = 1cm
@@ -63,8 +64,8 @@ class Move(object):
             
             self.left.ChangeDutyCycle(4)  
             self.right.ChangeDutyCycle(8)  
-
-            print("Moving Backwards")
+            if debugging:
+                print("Moving Backwards")
             ## 0.16*6s = 360 degree turn
             ## 40mm radius , so 8*3.14 = one full revolution , 
             ## so 1 of movement = x seconds ,  0.96s = 8*3.14, 0.96/(8*3.14159) = 1cm
@@ -92,11 +93,13 @@ class Move(object):
             if (angle > 0):
                 self.left.ChangeDutyCycle(8)  
                 self.right.ChangeDutyCycle(8)  
-                print ('Rotating left')
+                if debugging:
+                    print ('Rotating left')
             elif (angle < 0):
                 self.right.ChangeDutyCycle(4)
                 self.left.ChangeDutyCycle(4)
-                print ('Rotating Right')
+                if debugging:
+                    print ('Rotating Right')
             else:
                 print('Please set the angle to something other than 0')
 
@@ -161,11 +164,13 @@ class Move(object):
             if (clockWise):
                 self.left.ChangeDutyCycle(8)  
                 self.right.ChangeDutyCycle(8)  
-                print ('Rotating CW')
+                if debugging:
+                    print ('Rotating CW')
             else:
                 self.right.ChangeDutyCycle(4)
                 self.left.ChangeDutyCycle(4)
-                print ('Rotating CCW')
+                if debugging:
+                    print ('Rotating CCW')
         
         except Exception as e:
             print ("something went wrong, error: ", str(e))

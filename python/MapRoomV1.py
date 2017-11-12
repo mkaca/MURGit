@@ -94,12 +94,16 @@ while (1):  ## this is temporary and wil\l not be used
 	    while(count < 4):
 	    	if redSONAR.sense() < 80 or blueSONAR.sense() < 80 or time.time()-start > 3:
 	    		count = count + 1
-	    	time.sleep(0.1)
+                print ('RED:', redSONAR.sense())
+                print ('BLUE:', blueSONAR.sense())
+	    	time.sleep(0.05)
 	    end = time.time()
 	    move.Stop()
 	    distanceMoved = ((end-start)*8*3.14159)/(0.96*1.13)
 	    currentPositionX = currentPositionX + int(round(distanceMoved*m.cos(dirAngle*3.14159/180)))
 	    currentPositionY = currentPositionY + int(round(distanceMoved*m.sin(dirAngle*3.14159/180)))
+        print('currentPositionY:', currentPositionY)
+        print('currentPositionX:', currentPositionX)
 
             #Start scanning sequence after SONAR detects thingy and update map of 10m x 10m
             for angle in range(90,-91,-10):           ### change code so that servo doesn't reset... otherwise will have to do increments of 3
@@ -111,13 +115,13 @@ while (1):  ## this is temporary and wil\l not be used
                             if (distance > 0):
                                     distancePositive = True
                             time.sleep(timing/1000000.00)   					  ### try removing this wait
-                    if (distance < 120 and distance > 4):
+                    if (distance < 100 and distance > 4):
                         x,y = lidarToXY(distance,width,height,abs(angle))
                         #print (y)
                         x = x + currentPositionX
                         y = y + currentPositionY
-                        # print('y',y)
-                        #print('x',x)
+                        print('y',y)
+                        print('x',x)
                         mapArray[x][y] = mapArray[x][y] + 1
                         superCounter = superCounter +1
                     time.sleep(0.01)
@@ -125,11 +129,21 @@ while (1):  ## this is temporary and wil\l not be used
             ###if move.turn is used, change the initDirAngle
             if (redSONAR.sense() < 80 or blueSONAR.sense() < 80):
                     move.StartTurn(90)     ## turns 90 degrees clockwise
-                    print ('IMU:',getProperIMUReading(bno))
-                    while(getProperIMUReading(bno) - dirAngle < 85):
-                          print ('angle: ',getProperIMUReading(bno) )
-                    dirAngle  = dirAngle + getProperIMUReading(bno)
+                    keepTurning = True
+
+                    while(keepTurning):
+                        if dirAngle > 0 and getProperIMUReading(bno) < 0:
+                            val = 360 + getProperIMUReading(bno) - dirAngle
+                        else: 
+                            val = abs(dirAngle - getProperIMUReading(bno))
+                        if (val > 85):
+                            keepTurning = False
+                        print ('angle: ',getProperIMUReading(bno) )
                     move.Stop()
+                    print ('old angle:',dirAngle)
+                    dirAngle = getProperIMUReading(bno)
+                    print ('new angle:', dirAngle)
+                    
             valuesX = []
             valuesY = []
             for i in range(200):
