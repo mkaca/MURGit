@@ -8,6 +8,7 @@ class Move(object):
         self.rWheelPin = rWheelPin
         self.cleanup = cleanup
         self.setWarnings = setWarnings
+        self.debugging = debugging
 
         #set GPIO mode
         GPIO.setmode(GPIO.BOARD)
@@ -38,7 +39,7 @@ class Move(object):
             self.left.ChangeDutyCycle(8)  
             self.right.ChangeDutyCycle(4)  
 
-            if debugging:
+            if self.debugging:
                 print("Moving Forward")
             ## 0.16*6s = 360 degree turn
             ## 40mm radius , so 8*3.14 = one full revolution , 
@@ -64,7 +65,7 @@ class Move(object):
             
             self.left.ChangeDutyCycle(4)  
             self.right.ChangeDutyCycle(8)  
-            if debugging:
+            if self.debugging:
                 print("Moving Backwards")
             ## 0.16*6s = 360 degree turn
             ## 40mm radius , so 8*3.14 = one full revolution , 
@@ -93,12 +94,12 @@ class Move(object):
             if (angle > 0):
                 self.left.ChangeDutyCycle(8)  
                 self.right.ChangeDutyCycle(8)  
-                if debugging:
+                if self.debugging:
                     print ('Rotating left')
             elif (angle < 0):
                 self.right.ChangeDutyCycle(4)
                 self.left.ChangeDutyCycle(4)
-                if debugging:
+                if self.debugging:
                     print ('Rotating Right')
             else:
                 print('Please set the angle to something other than 0')
@@ -164,12 +165,12 @@ class Move(object):
             if (clockWise):
                 self.left.ChangeDutyCycle(8)  
                 self.right.ChangeDutyCycle(8)  
-                if debugging:
+                if self.debugging:
                     print ('Rotating CW')
             else:
                 self.right.ChangeDutyCycle(4)
                 self.left.ChangeDutyCycle(4)
-                if debugging:
+                if self.debugging:
                     print ('Rotating CCW')
         
         except Exception as e:

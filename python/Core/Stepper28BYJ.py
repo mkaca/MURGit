@@ -64,7 +64,7 @@ class Stepper28BYJ(object):
       #  degrees = degrees*4
       
       self.steps = int(round(abs(degrees)*1024/90))
-      if debugging:
+      if self.debugging:
         print("Move from %i to %i which is %i"%(self.startingPos, position,self.steps))
       for _ in range(0,self.steps):  # 12 =1 degree
           for pin in range(0, 4):
@@ -90,7 +90,7 @@ class Stepper28BYJ(object):
           time.sleep(self.WaitTime)
           
       self.startingPos = position
-      if debugging:
+      if self.debugging:
         print('program succeeded')
       time.sleep(0.1)   #wait 10 ms 
 

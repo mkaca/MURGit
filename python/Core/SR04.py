@@ -38,7 +38,7 @@ class SR04(object):
                    self.pulse_end = time.time()
             self.pulse_duration = self.pulse_end - self.pulse_start
             distance = round(self.pulse_duration * 17150,  2) ## this gives us the distance rounded to 2 decimals in cm assuming speed = 343m/s
-            if debugging:
+            if self.debugging:
                 print ("distance: " , distance, " cm")
             return distance
         except Exception as e:
@@ -47,7 +47,7 @@ class SR04(object):
                 GPIO.cleanup()
         finally:
           GPIO.output(self.trig, False)
-          if debugging:
+          if self.debugging:
             print('program complete')
  
 

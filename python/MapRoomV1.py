@@ -31,9 +31,9 @@ def lidarToXY(distance,width,height,angle):
 	alpha = distance - c
 	x = int(round(alpha*m.sin(angleR)))
 	y = int(round(alpha*m.cos(angleR)))
-	print ('d',distance)
-	print('c',c)
-	print(angle)
+	#print ('d',distance)
+	#print('c',c)
+	#print('angle:',angle)
 	return x,y
 
 def getProperIMUReading(bno):
@@ -87,7 +87,7 @@ while (1):  ## this is temporary and wil\l not be used
     ### Moves until SONAR stops it OR until 3 seconds have passed
     ## Eventually will need to change it so that it maps it while moving too (for corridors and stuff, like with lidar on one side)
     ### Always starts by moving the vehicle in the X direction 
-    for _ in range(3):
+    for _ in range(4):
 	    move.Go()
 	    count = 0
 	    start = time.time()
@@ -102,16 +102,15 @@ while (1):  ## this is temporary and wil\l not be used
 	    distanceMoved = ((end-start)*8*3.14159)/(0.96*1.13)
 	    currentPositionX = currentPositionX + int(round(distanceMoved*m.cos(dirAngle*3.14159/180)))
 	    currentPositionY = currentPositionY + int(round(distanceMoved*m.sin(dirAngle*3.14159/180)))
-        print('currentPositionY:', currentPositionY)
-        print('currentPositionX:', currentPositionX)
+            print('currentPositionY:', currentPositionY)
+            print('currentPositionX:', currentPositionX)
 
             #Start scanning sequence after SONAR detects thingy and update map of 10m x 10m
-            for angle in range(90,-91,-10):           ### change code so that servo doesn't reset... otherwise will have to do increments of 3
+            for angle in range(80,-81,-5):           ### change code so that servo doesn't reset... otherwise will have to do increments of 3
                     stepper.moveToPosition(angle)
                     distancePositive = False
                     while (not distancePositive):
                             distance = tof.get_distance()/ 10
-                            print (distance)
                             if (distance > 0):
                                     distancePositive = True
                             time.sleep(timing/1000000.00)   					  ### try removing this wait
@@ -120,12 +119,25 @@ while (1):  ## this is temporary and wil\l not be used
                         #print (y)
                         x = x + currentPositionX
                         y = y + currentPositionY
-                        print('y',y)
-                        print('x',x)
+                        #print('y',y)
+                        #print('x',x)
                         mapArray[x][y] = mapArray[x][y] + 1
                         superCounter = superCounter +1
                     time.sleep(0.01)
+                    print(' ')
             stepper.moveToPosition(0)
+            """### Plot map
+            valuesX = []
+            valuesY = []
+            for i in range(200):
+                for j in range(200):
+                    if (mapArray[i][j] > 0):
+                        valuesX.append(i)
+                        valuesY.append(j)
+            plt.plot(valuesX,valuesY)
+            plt.grid(True)
+            plt.show()"""
+            
             ###if move.turn is used, change the initDirAngle
             if (redSONAR.sense() < 80 or blueSONAR.sense() < 80):
                     move.StartTurn(90)     ## turns 90 degrees clockwise
@@ -144,20 +156,21 @@ while (1):  ## this is temporary and wil\l not be used
                     dirAngle = getProperIMUReading(bno)
                     print ('new angle:', dirAngle)
                     
-            valuesX = []
-            valuesY = []
-            for i in range(200):
-                for j in range(200):
-                    if (mapArray[i][j] > 0):
-                        valuesX.append(i)
-                        valuesY.append(j)
-            plt.plot(valuesX,valuesY)
-            plt.grid(True)
-            plt.show()
+            
             #print (mapArray)
             print('totallllllllllllllllllllllllllll',superCounter)
             time.sleep(3)    # for testing purposes
-
+            
+    valuesX = []
+    valuesY = []
+    for i in range(200):
+        for j in range(200):
+            if (mapArray[i][j] > 0):
+                valuesX.append(i)
+                valuesY.append(j)
+    plt.plot(valuesX,valuesY)
+    plt.grid(True)
+    plt.show()
 #except Exception as e:
     print("something went wrong: ", e)
 
