@@ -10,7 +10,7 @@ import time
 
 width = 11.5
 height = 1.5
-mapSize = 700
+mapSize = 800
 
 ### Note that here the width is the distance from the lidar center to side edge of car
 ### The height is the distance from lidar center to front of car
@@ -30,9 +30,10 @@ def lidarToXY(distance,width,height,angle,dirAngle):
                 c = width
 	else:
 		c = width/m.cos(angleR)
-	alpha = distance - c
-	x = int(round(alpha*m.sin(angleR+angleDirR)))
-	y = int(round(alpha*m.cos(angleR+angleDirR)))
+	#alpha = distance - c
+	alpha = distance #Changed alpha to just be the distance
+	x = int(round(alpha*m.cos(angleR+angleDirR)))
+	y = int(round(alpha*m.sin(angleR+angleDirR)))
 	#print ('d',distance)
 	#print('c',c)
 	#print('angle:',angle)
@@ -41,7 +42,7 @@ def lidarToXY(distance,width,height,angle,dirAngle):
 def getProperIMUReading(bno):
     sum = 0
     count = 0
-    sampleSize = 10
+    sampleSize = 100
     for _ in range(sampleSize):
         reading = bno.getVector(bno.VECTOR_EULER)[0]
         if reading <= 360 and reading >= 180:
@@ -50,15 +51,16 @@ def getProperIMUReading(bno):
             sum += reading
             count += 1
         time.sleep(0.01)
-        if count == 0:
-            print('bad reading:',reading)
-            print('distance:',bno.getVector(bno.VECTOR_EULER)[0])
+        #if count == 0:
+            #print('bad reading:',reading)
+            #print('imu:',bno.getVector(bno.VECTOR_EULER)[0])
         if count == 2:
+            print("new Imu reading:",sum/count)
             return sum/count
     raise("ERROR...IMU isnt reading any proper values")
 
-#try:
-while (1):  ## this is temporary and wil\l not be used
+try:
+#while (1):  ## this is temporary and wil\l not be used
     # 1 unit is 1 cm
     mapArray = [[0 for _ in range(mapSize)] for _ in range(mapSize)] #3m x 3mfor testing
     
@@ -94,70 +96,70 @@ while (1):  ## this is temporary and wil\l not be used
     ### Moves until SONAR stops it OR until 3 seconds have passed
     ## Eventually will need to change it so that it maps it while moving too (for corridors and stuff, like with lidar on one side)
     ### Always starts by moving the vehicle in the X direction 
-    for _ in range(4):
+    for _ in range(2):
             count = 0
-            start = time.time()
             movingAngle = -70
             stepper.moveToPosition(movingAngle)
+            start = time.time()
             move.Go()
             while(count < 2):
                     redDist = redSONAR.sense()
                     blueDist = blueSONAR.sense()
-                    distanceMovedWhileMoving = ((time.time()-start)*8*3.14159)/(1.16*1.13)   ## This is for 5V
+                    distanceMovedWhileMoving = ((time.time()-start)*8*3.14159*1.065)/(1.16)#*1.13)   ## This is for 5V
                     x,y = lidarToXY(tof.get_distance()/ 10, width, height, movingAngle, dirAngle)
+                    #print('yBefre',y)
+                    #print('xBefore',x)
                     x = x + currentPositionX + int(round(distanceMovedWhileMoving*m.cos(dirAngle*3.14159/180)))
                     y = y + currentPositionY + int(round(distanceMovedWhileMoving*m.sin(dirAngle*3.14159/180)))
+                    #print('yAfter',y)
+                    #print('xAfter',x)
                     mapArray[x][y] = mapArray[x][y] + 1
-                    if redDist < 80 or blueDist < 80 or time.time()-start > 1.5:
+                    if redDist < 40 or blueDist < 40 or time.time()-start > 2.2:
                         count = count + 1
                         print ('RED:', redDist)
                         print ('BLUE:', blueDist)
-                    time.sleep(0.05)
+                        #print ('distanceMovedWhileMoving',distanceMovedWhileMoving)
+                    #time.sleep(0.05)
             end = time.time()
             move.Stop()
             #distanceMoved = ((end-start)*8*3.14159)/(0.96*1.13)   ## This is for 6v
-            distanceMoved = ((end-start)*8*3.14159)/(1.16*1.13)   ## This is for 5V
+            distanceMoved = ((end-start)*8*3.14159*1.065)/(1.16)#*1.03)   ## This is for 5V
+            #print('total dist moved', distanceMoved)
             currentPositionX = currentPositionX + int(round(distanceMoved*m.cos(dirAngle*3.14159/180)))
             currentPositionY = currentPositionY + int(round(distanceMoved*m.sin(dirAngle*3.14159/180)))
             print('currentPositionY:', currentPositionY)
             print('currentPositionX:', currentPositionX)
+            print('dirAngle:', dirAngle)
 
             #Start scanning sequence after SONAR detects thingy and update map of 10m x 10m
-            for angle in range(80,-81,-5):           ### change code so that servo doesn't reset... otherwise will have to do increments of 3
+            for angle in range(-80,81,5):           ### change code so that servo doesn't reset... otherwise will have to do increments of 3
                     stepper.moveToPosition(angle)
+                    time.sleep(0.1)
                     distancePositive = False
                     while (not distancePositive):
                             distance = tof.get_distance()/ 10
                             if (distance > 0):
                                     distancePositive = True
                             time.sleep(timing/1000000.00)   					  ### try removing this wait
-                    if (distance < 100 and distance > 4):
+                    if (distance < 80 and distance > 4):
                         x,y = lidarToXY(distance,width,height,angle,dirAngle)
-                        #print (y)
+                        print('angle:',angle)
+                        print('x',x)
+                        print('y',y)
+                        print('distance: ',distance)
                         x = x + currentPositionX
                         y = y + currentPositionY
                         #print('y',y)
                         #print('x',x)
                         mapArray[x][y] = mapArray[x][y] + 1
                         superCounter = superCounter +1
-                        print('recording')
+                        
                     time.sleep(0.01)
                     #print(' ')
             stepper.moveToPosition(0)
-            """### Plot map
-            valuesX = []
-            valuesY = []
-            for i in range(200):
-                for j in range(200):
-                    if (mapArray[i][j] > 0):
-                        valuesX.append(i)
-                        valuesY.append(j)
-            plt.plot(valuesX,valuesY)
-            plt.grid(True)
-            plt.show()"""
-            
+         
             ###if move.turn is used, change the initDirAngle
-            if (redSONAR.sense() < 80 or blueSONAR.sense() < 80):
+            if (redSONAR.sense() < 40 or blueSONAR.sense() < 40):
                     move.StartTurn(90)     ## turns 90 degrees clockwise
                     keepTurning = True
 
@@ -168,7 +170,7 @@ while (1):  ## this is temporary and wil\l not be used
                             val = abs(dirAngle - getProperIMUReading(bno))
                         if (val > 85):
                             keepTurning = False
-                        print ('angle: ',getProperIMUReading(bno) )
+                        #print ('angle: ',getProperIMUReading(bno) )
                     move.Stop()
                     print ('old angle:',dirAngle)
                     dirAngle = getProperIMUReading(bno)
@@ -187,12 +189,15 @@ while (1):  ## this is temporary and wil\l not be used
                 valuesX.append(i)
                 valuesY.append(j)
     plt.plot(valuesX,valuesY,'bo')
+    x1,x2,_,_ = plt.axis()
+    plt.axis((x1,x2,350,500))
     plt.grid(True)
     plt.show()
-#except Exception as e:
+except Exception as e:
     print("something went wrong: ", e)
 
-#finally:
+finally:
+    stepper.moveToPosition(0)
     tof.stop_ranging()
     move.Stop()
-    GPIO.cleanup()
+    #GPIO.cleanup()
