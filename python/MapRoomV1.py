@@ -10,6 +10,7 @@ import time
 
 width = 11.5
 height = 1.5
+mapSize = 700
 
 ### Note that here the width is the distance from the lidar center to side edge of car
 ### The height is the distance from lidar center to front of car
@@ -59,7 +60,7 @@ def getProperIMUReading(bno):
 #try:
 while (1):  ## this is temporary and wil\l not be used
     # 1 unit is 1 cm
-    mapArray = [[0 for _ in range(600)] for _ in range(600)] #3m x 3mfor testing
+    mapArray = [[0 for _ in range(mapSize)] for _ in range(mapSize)] #3m x 3mfor testing
     
     stepper = Stepper28BYJ.Stepper28BYJ(37,33,31,29)
     move = Move.Move(12,16)
@@ -70,7 +71,7 @@ while (1):  ## this is temporary and wil\l not be used
     
     # IMU init
     if bno.begin() is not True:
-        print "Error initializing device"
+        print ("Error initializing device")
         exit()
     time.sleep(0.1)
     bno.setExternalCrystalUse(True)
@@ -83,8 +84,8 @@ while (1):  ## this is temporary and wil\l not be used
     print ("Timing %d ms" % (timing/1000))					   ### whats the point of this
 
 
-    currentPositionX = 300  ## change this when car moves
-    currentPositionY = 300  ## change this when car moves
+    currentPositionX = mapSize/2  ## change this when car moves
+    currentPositionY = mapSize/2  ## change this when car moves
     dirAngle = 0     ### make angle consistent with the move.turn function
     superCounter = 0
     
@@ -94,22 +95,30 @@ while (1):  ## this is temporary and wil\l not be used
     ## Eventually will need to change it so that it maps it while moving too (for corridors and stuff, like with lidar on one side)
     ### Always starts by moving the vehicle in the X direction 
     for _ in range(4):
-	    count = 0
-	    start = time.time()
-	    move.Go()
-	    while(count < 2):
-                redDist = redSONAR.sense()
-                blueDist = blueSONAR.sense()
-	    	if redDist < 80 or blueDist < 80 or time.time()-start > 1:
-	    		count = count + 1
-                print ('RED:', redDist)
-                print ('BLUE:', blueDist)
-	    	time.sleep(0.05)
-	    end = time.time()
-	    move.Stop()
-	    distanceMoved = ((end-start)*8*3.14159)/(0.96*1.13)
-	    currentPositionX = currentPositionX + int(round(distanceMoved*m.cos(dirAngle*3.14159/180)))
-	    currentPositionY = currentPositionY + int(round(distanceMoved*m.sin(dirAngle*3.14159/180)))
+            count = 0
+            start = time.time()
+            movingAngle = -70
+            stepper.moveToPosition(movingAngle)
+            move.Go()
+            while(count < 2):
+                    redDist = redSONAR.sense()
+                    blueDist = blueSONAR.sense()
+                    distanceMovedWhileMoving = ((time.time()-start)*8*3.14159)/(1.16*1.13)   ## This is for 5V
+                    x,y = lidarToXY(tof.get_distance()/ 10, width, height, movingAngle, dirAngle)
+                    x = x + currentPositionX + int(round(distanceMovedWhileMoving*m.cos(dirAngle*3.14159/180)))
+                    y = y + currentPositionY + int(round(distanceMovedWhileMoving*m.sin(dirAngle*3.14159/180)))
+                    mapArray[x][y] = mapArray[x][y] + 1
+                    if redDist < 80 or blueDist < 80 or time.time()-start > 1.5:
+                        count = count + 1
+                        print ('RED:', redDist)
+                        print ('BLUE:', blueDist)
+                    time.sleep(0.05)
+            end = time.time()
+            move.Stop()
+            #distanceMoved = ((end-start)*8*3.14159)/(0.96*1.13)   ## This is for 6v
+            distanceMoved = ((end-start)*8*3.14159)/(1.16*1.13)   ## This is for 5V
+            currentPositionX = currentPositionX + int(round(distanceMoved*m.cos(dirAngle*3.14159/180)))
+            currentPositionY = currentPositionY + int(round(distanceMoved*m.sin(dirAngle*3.14159/180)))
             print('currentPositionY:', currentPositionY)
             print('currentPositionX:', currentPositionX)
 
@@ -172,8 +181,8 @@ while (1):  ## this is temporary and wil\l not be used
             
     valuesX = []
     valuesY = []
-    for i in range(600):
-        for j in range(600):
+    for i in range(mapSize):
+        for j in range(mapSize):
             if (mapArray[i][j] > 0):
                 valuesX.append(i)
                 valuesY.append(j)
