@@ -10,7 +10,7 @@ import time
 
 width = 11.5
 height = 1.5
-mapSize = 800
+mapSize = 1000
 
 ### Note that here the width is the distance from the lidar center to side edge of car
 ### The height is the distance from lidar center to front of car
@@ -55,12 +55,12 @@ def getProperIMUReading(bno):
             #print('bad reading:',reading)
             #print('imu:',bno.getVector(bno.VECTOR_EULER)[0])
         if count == 2:
-            print("new Imu reading:",sum/count)
+            #print("new Imu reading:",sum/count)
             return sum/count
     raise("ERROR...IMU isnt reading any proper values")
 
-try:
-#while (1):  ## this is temporary and wil\l not be used
+#try:
+while (1):  ## this is temporary and wil\l not be used
     # 1 unit is 1 cm
     mapArray = [[0 for _ in range(mapSize)] for _ in range(mapSize)] #3m x 3mfor testing
     
@@ -90,13 +90,14 @@ try:
     currentPositionY = mapSize/2  ## change this when car moves
     dirAngle = 0     ### make angle consistent with the move.turn function
     superCounter = 0
+    sonarMin = 30
     
     #### START LOOP FOR SCANNING ROOM
 
     ### Moves until SONAR stops it OR until 3 seconds have passed
     ## Eventually will need to change it so that it maps it while moving too (for corridors and stuff, like with lidar on one side)
     ### Always starts by moving the vehicle in the X direction 
-    for _ in range(2):
+    for _ in range(3):
             count = 0
             movingAngle = -70
             stepper.moveToPosition(movingAngle)
@@ -105,7 +106,7 @@ try:
             while(count < 2):
                     redDist = redSONAR.sense()
                     blueDist = blueSONAR.sense()
-                    distanceMovedWhileMoving = ((time.time()-start)*8*3.14159*1.065)/(1.16)#*1.13)   ## This is for 5V
+                    distanceMovedWhileMoving = ((time.time()-start)*8*3.14159*1.024)/(1.16*1.09)   ## This is for 5V
                     x,y = lidarToXY(tof.get_distance()/ 10, width, height, movingAngle, dirAngle)
                     #print('yBefre',y)
                     #print('xBefore',x)
@@ -114,7 +115,7 @@ try:
                     #print('yAfter',y)
                     #print('xAfter',x)
                     mapArray[x][y] = mapArray[x][y] + 1
-                    if redDist < 40 or blueDist < 40 or time.time()-start > 2.2:
+                    if redDist < sonarMin or blueDist < sonarMin or time.time()-start > 8.2:
                         count = count + 1
                         print ('RED:', redDist)
                         print ('BLUE:', blueDist)
@@ -123,7 +124,7 @@ try:
             end = time.time()
             move.Stop()
             #distanceMoved = ((end-start)*8*3.14159)/(0.96*1.13)   ## This is for 6v
-            distanceMoved = ((end-start)*8*3.14159*1.065)/(1.16)#*1.03)   ## This is for 5V
+            distanceMoved = ((end-start)*8*3.14159*1.024)/(1.16*1.09)#*1.03)   ## This is for 5V
             #print('total dist moved', distanceMoved)
             currentPositionX = currentPositionX + int(round(distanceMoved*m.cos(dirAngle*3.14159/180)))
             currentPositionY = currentPositionY + int(round(distanceMoved*m.sin(dirAngle*3.14159/180)))
@@ -132,7 +133,7 @@ try:
             print('dirAngle:', dirAngle)
 
             #Start scanning sequence after SONAR detects thingy and update map of 10m x 10m
-            for angle in range(-80,81,5):           ### change code so that servo doesn't reset... otherwise will have to do increments of 3
+            for angle in range(-80,81,8):           ### change code so that servo doesn't reset... otherwise will have to do increments of 3
                     stepper.moveToPosition(angle)
                     time.sleep(0.1)
                     distancePositive = False
@@ -143,10 +144,10 @@ try:
                             time.sleep(timing/1000000.00)   					  ### try removing this wait
                     if (distance < 80 and distance > 4):
                         x,y = lidarToXY(distance,width,height,angle,dirAngle)
-                        print('angle:',angle)
-                        print('x',x)
-                        print('y',y)
-                        print('distance: ',distance)
+                        #print('angle:',angle)
+                        #print('x',x)
+                        #print('y',y)
+                        #print('distance: ',distance)
                         x = x + currentPositionX
                         y = y + currentPositionY
                         #print('y',y)
@@ -159,7 +160,7 @@ try:
             stepper.moveToPosition(0)
          
             ###if move.turn is used, change the initDirAngle
-            if (redSONAR.sense() < 40 or blueSONAR.sense() < 40):
+            if (redSONAR.sense() < sonarMin or blueSONAR.sense() < sonarMin):
                     move.StartTurn(90)     ## turns 90 degrees clockwise
                     keepTurning = True
 
@@ -189,14 +190,14 @@ try:
                 valuesX.append(i)
                 valuesY.append(j)
     plt.plot(valuesX,valuesY,'bo')
-    x1,x2,_,_ = plt.axis()
-    plt.axis((x1,x2,350,500))
+    x1,x2,y1,y2 = plt.axis()
+    plt.axis((x1,x2,y1,y2))
     plt.grid(True)
     plt.show()
-except Exception as e:
+#except Exception as e:
     print("something went wrong: ", e)
 
-finally:
+#finally:
     stepper.moveToPosition(0)
     tof.stop_ranging()
     move.Stop()

@@ -44,15 +44,19 @@ while (1):
     elif (option == "2"):
         p.start(6.5)
         g.start (6.5)
+        start = time.time()
         
         #dutyCycles = [8,6.5,4]      ## This is for WHEEL 1
         #dutyCycles2 = [10,6.5,4]   ##THIS IS FOR WHEEL 2
         p.ChangeDutyCycle(8)  ## WHEEL 1
-        g.ChangeDutyCycle(8)  ##WHEEL 2
+        g.ChangeDutyCycle(4)  ##WHEEL 2
         print("Forward")
         time.sleep(1.0)
         p.stop()
         g.stop()
+        end = time.time()
+        distanceMoved = ((end-start)*8*3.14159*1.024)/(1.16*1.09)
+        print('distanceMoved:',distanceMoved)
         time.sleep(1.0)
     elif (option == "3"):
         p.start(6.5)

@@ -30,12 +30,12 @@ class Move (object):
 
         if (degrees > 270 or degrees < 0):
             raise Exception("Degrees parameter must be between 0 and 270!. You entered:", degrees)
-
+        print("potato:",self.pin)
         self.pin = GPIO.PWM(self.pin, 50)
 
         try:
             self.pin.start(self.startValue)
-            location = 5 
+            location = degrees
             self.pin.ChangeDutyCycle(location)  
 
             if self.debugging:
