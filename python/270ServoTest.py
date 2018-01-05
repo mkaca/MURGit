@@ -13,8 +13,10 @@ import time
 while (1):  ## this is temporary and wil\l not be used
     # 1 unit is 1 cm
     
-    #move = jointServo.Move(40)
-    #move.turnDegrees(5)
+    move = jointServo.Move(40)
+    move.turnDegrees(15)
+    print( 'waiting')
+
     time.sleep(2)
     moveOld = Move.Move(12,40)
     moveOld.Go()
