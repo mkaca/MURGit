@@ -4,11 +4,12 @@ from Core import Servo270Degrees as jointServo
 from Core import BNO055
 from Core import Move
 import VL53L0X
+from Core import Walk
 
 from matplotlib import pyplot as plt
 import math as m
 import time
-
+"""
 #try:
 while (1):  ## this is temporary and wil\l not be used
     # 1 unit is 1 cm
@@ -23,3 +24,9 @@ while (1):  ## this is temporary and wil\l not be used
     #moveOld = Move.Move(12,40)
     #moveOld.Go()
     #time.sleep(2)
+"""
+
+testMove = Walk.Walk(_,40,_,38, debugging = True)
+testMove.standStraight
+#testMove.walkTest(1)
+time.sleep(3)

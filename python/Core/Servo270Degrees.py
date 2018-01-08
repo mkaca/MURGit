@@ -28,7 +28,7 @@ class Move (object):
         #self.pin = GPIO.PWM(pin,50)
 
     # Turns the servo x degrees
-    def turnDegrees (self,degrees, degreeFactor = 0.035):
+    def turnDegrees (self,degrees, degreeFactor = 0.035, keepCurrentOn = False):
 
         if (degrees > 90 or degrees < -90):
             raise Exception("Degrees parameter must be between 0 and 270!. You entered:", degrees)
@@ -58,7 +58,7 @@ class Move (object):
         except Exception as e:
             print ("something went wrong, error: ", str(e))
         finally:
-            if (self.keepCurrentOn == False):    
+            if (self.keepCurrentOn == False and keepCurrentOn == False):    
                 p.stop()
             time.sleep(0.100)    ## necessary delay to allow setup of servos
             #Try reducing wait time at end to optimize performance
