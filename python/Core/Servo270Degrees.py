@@ -59,6 +59,7 @@ class Move (object):
             print ("something went wrong, error: ", str(e))
         finally:
             if (self.keepCurrentOn == False and keepCurrentOn == False):    
+                print('stopping servo:',self.pin)
                 p.stop()
             time.sleep(0.100)    ## necessary delay to allow setup of servos
             #Try reducing wait time at end to optimize performance

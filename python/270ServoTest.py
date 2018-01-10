@@ -25,8 +25,16 @@ while (1):  ## this is temporary and wil\l not be used
     #moveOld.Go()
     #time.sleep(2)
 """
+move = jointServo.Move(38, debugging = True, offset = -0.35)
+move2 = jointServo.Move(40, debugging = True, offset = 1.6)
 
-testMove = Walk.Walk(_,40,_,38, debugging = True)
-testMove.standStraight
-#testMove.walkTest(1)
-time.sleep(3)
+move.turnDegrees(-15)
+move2.turnDegrees(-15)
+time.sleep(1.5)
+move.turnDegrees(0)
+move2.turnDegrees(0)
+time.sleep(1.5)
+#testMove = Walk.Walk(32,40,26,38, debugging = True)
+#testMove.standStraight
+#testMove.walkTest(2)
+#time.sleep(3)
