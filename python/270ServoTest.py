@@ -24,17 +24,18 @@ while (1):  ## this is temporary and wil\l not be used
     #moveOld = Move.Move(12,40)
     #moveOld.Go()
     #time.sleep(2)
-"""
+
 move = jointServo.Move(38, debugging = True, offset = -0.35)
-move2 = jointServo.Move(40, debugging = True, offset = 1.6)
+move2 = jointServo.Move(40, debugging = True, offset = -0.14)
 
 move.turnDegrees(-15)
 move2.turnDegrees(-15)
 time.sleep(1.5)
 move.turnDegrees(0)
 move2.turnDegrees(0)
-time.sleep(1.5)
-#testMove = Walk.Walk(32,40,26,38, debugging = True)
-#testMove.standStraight
-#testMove.walkTest(2)
-#time.sleep(3)
+time.sleep(1.5)"""
+# left knee, right knee, left leg, right leg 
+testMove = Walk.Walk(32,40,36,38, debugging = True) 
+testMove.standStraight
+testMove.walkTest(3)
+time.sleep(5)
